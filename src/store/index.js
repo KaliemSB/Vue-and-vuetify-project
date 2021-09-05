@@ -34,7 +34,7 @@ export default new Vuex.Store({
           this.state.user = null;
         })
         .catch((error) => {
-          console.log(error);
+          console.error(error);
         });
     },
   },

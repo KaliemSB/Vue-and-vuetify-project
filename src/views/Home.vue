@@ -108,8 +108,6 @@ export default {
           }
 
           this.notes = notes;
-
-          console.log(this.notes);
         });
     });
   },
