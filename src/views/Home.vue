@@ -33,7 +33,8 @@
                 <v-text-field
                   v-model="note"
                   label="Nova nota"
-                  autocomplete="false"
+                  autocomplete="off"
+                  :disabled="isLoading"
                 ></v-text-field>
               </v-col>
               <v-col cols="12" md="2">
@@ -90,6 +91,7 @@ export default {
       drawer: null,
       note: "",
       notes: "",
+      isLoading: null,
     };
   },
 
@@ -124,6 +126,12 @@ export default {
       if (this.note.trim() === "") {
         return;
       }
+
+      this.isLoading = true;
+
+      setTimeout(() => {
+        this.isLoading = false;
+      }, 500);
 
       const note = {
         content: content,
