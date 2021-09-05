@@ -26,52 +26,80 @@
 
     <v-main>
       <v-container class="py-8 px-6" fluid>
-        <v-row>
-          <v-col v-for="card in cards" :key="card" cols="12">
-            <v-card>
-              <v-subheader>{{ card }}</v-subheader>
-
-              <v-list two-line>
-                <template v-for="n in 6">
-                  <v-list-item :key="n">
-                    <v-list-item-avatar color="grey darken-1">
-                    </v-list-item-avatar>
-
-                    <v-list-item-content>
-                      <v-list-item-title>Message {{ n }}</v-list-item-title>
-
-                      <v-list-item-subtitle>
-                        Lorem ipsum dolor sit amet, consectetur adipisicing
-                        elit. Nihil repellendus distinctio similique
-                      </v-list-item-subtitle>
-                    </v-list-item-content>
-                  </v-list-item>
-
-                  <v-divider
-                    v-if="n !== 6"
-                    :key="`divider-${n}`"
-                    inset
-                  ></v-divider>
-                </template>
-              </v-list>
-            </v-card>
-          </v-col>
-        </v-row>
+        <v-form>
+          <v-container>
+            <v-row>
+              <v-col cols="12" md="10">
+                <v-text-field
+                  v-model="note"
+                  label="Nova nota"
+                  autocomplete="false"
+                ></v-text-field>
+              </v-col>
+              <v-col cols="12" md="2">
+                <v-btn
+                  type="submit"
+                  @click="handleNewNote(note, user.id, $event)"
+                  color="success"
+                  block
+                  >Adicionar</v-btn
+                >
+              </v-col>
+            </v-row>
+            <v-simple-table>
+              <template v-slot:default>
+                <thead>
+                  <tr>
+                    <th class="text-left">Suas notas</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="note in notes" :key="note.index">
+                    <td>{{ note.content }}</td>
+                  </tr>
+                </tbody>
+              </template>
+            </v-simple-table>
+          </v-container>
+        </v-form>
       </v-container>
     </v-main>
   </v-app>
 </template>
 
 <script>
+import { database } from "../services/firebase";
+
 export default {
   name: "Home",
 
   data() {
     return {
       user: this.$store.state.user,
-      cards: ["Today"],
       drawer: null,
+      note: "",
+      notes: "",
     };
+  },
+
+  mounted: function () {
+    this.$nextTick(function () {
+      const dbRef = database.ref("notes");
+
+      dbRef.on("value", (snapshot) => {
+        const data = snapshot.val();
+        let notes = [];
+
+        Object.keys(data).forEach((key) => {
+          notes.push({
+            id: data[key].author,
+            content: data[key].content,
+          });
+        });
+
+        this.notes = notes;
+      });
+    });
   },
 
   methods: {
@@ -79,6 +107,23 @@ export default {
       await this.$store.dispatch("signOut");
 
       await this.$router.push({ name: "Login" });
+    },
+    async handleNewNote(content, id, event) {
+      event.preventDefault();
+
+      if (this.note.trim() === "") {
+        return;
+      }
+
+      const note = {
+        content: content,
+        author: id,
+        completed: false,
+      };
+
+      await database.ref("notes").push(note);
+
+      this.note = "";
     },
   },
 };

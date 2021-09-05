@@ -10,6 +10,7 @@ export default new Vuex.Store({
   },
   mutations: {},
   actions: {
+    // Firebase Auth
     async loginWithGoogle() {
       const provider = new firebase.auth.GoogleAuthProvider();
       const result = await auth.signInWithPopup(provider);

@@ -31,6 +31,7 @@ const router = new VueRouter({
 
 router.beforeEach((to, from, next) => {
   console.log(`navigating to ${to.name} from ${from.name}`);
+
   if (to.meta.requiresAuth) {
     if (store.state.user != null) {
       next();
