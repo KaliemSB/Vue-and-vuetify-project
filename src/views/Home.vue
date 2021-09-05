@@ -86,19 +86,22 @@ export default {
     this.$nextTick(function () {
       const dbRef = database.ref("notes");
 
-      dbRef.on("value", (snapshot) => {
-        const data = snapshot.val();
-        let notes = [];
+      dbRef
+        .orderByChild("author")
+        .equalTo(this.user.id)
+        .on("value", (snapshot) => {
+          const data = snapshot.val();
+          let notes = [];
 
-        Object.keys(data).forEach((key) => {
-          notes.push({
-            id: data[key].author,
-            content: data[key].content,
+          Object.keys(data).forEach((key) => {
+            notes.push({
+              id: data[key].author,
+              content: data[key].content,
+            });
           });
-        });
 
-        this.notes = notes;
-      });
+          this.notes = notes;
+        });
     });
   },
 
