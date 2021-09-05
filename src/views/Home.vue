@@ -51,11 +51,22 @@
                 <thead>
                   <tr>
                     <th class="text-left">Suas notas</th>
+                    <th class="text-left">Ações</th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr v-for="note in notes" :key="note.index">
-                    <td>{{ note.content }}</td>
+                    <td v-bind:class="{ complete: note.completed }">
+                      {{ note.content }}
+                    </td>
+                    <td>
+                      <v-icon small class="mr-2" @click="completeNote(note)">
+                        mdi-check
+                      </v-icon>
+                      <v-icon small @click="deleteNote(note)">
+                        mdi-delete
+                      </v-icon>
+                    </td>
                   </tr>
                 </tbody>
               </template>
@@ -84,23 +95,21 @@ export default {
 
   mounted: function () {
     this.$nextTick(function () {
-      const dbRef = database.ref("notes");
-
-      dbRef
+      database
+        .ref("notes")
         .orderByChild("author")
         .equalTo(this.user.id)
         .on("value", (snapshot) => {
           const data = snapshot.val();
-          let notes = [];
+          const notes = [];
 
-          Object.keys(data).forEach((key) => {
-            notes.push({
-              id: data[key].author,
-              content: data[key].content,
-            });
-          });
+          for (let id in data) {
+            notes.push({ id, ...data[id] });
+          }
 
           this.notes = notes;
+
+          console.log(this.notes);
         });
     });
   },
@@ -128,6 +137,20 @@ export default {
 
       this.note = "";
     },
+    async deleteNote(note) {
+      await database.ref("notes").child(note.id).remove();
+    },
+    async completeNote(note) {
+      await database.ref("notes").child(note.id).update({
+        completed: !note.completed,
+      });
+    },
   },
 };
 </script>
+
+<style scoped>
+.complete {
+  text-decoration: line-through;
+}
+</style>
